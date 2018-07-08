@@ -58,7 +58,7 @@ class UserController extends Controller {
        
         $helpers = $this->get("app.helpers");    //Llamando al servicio Heelpers
         $hash = $request->get("auth", null);    //Solicitando el hash del tocken
-        $authCheck = $helpers->authCheck($hash);  
+        $authCheck = $helpers->checkAuth($hash);  
         if ($authCheck == true) {
             $identity=$helpers->checkAuth($hash,true);
             $em=$this->getDoctrine()->getManager();
@@ -80,15 +80,16 @@ class UserController extends Controller {
                 $emailConstrains = new Assert\Email();
                 $emailConstrains->message = "Email invalido";
                 $validate_email = $this->get("validator")->validate($email, $emailConstrains);
-                if ($email != null && count($validate_email) == 0 && $name != null && $surname != null
-                ) {
+                if ($email != null && count($validate_email) == 0 && $name != null && $surname != null) {
                     $user->setCreatedAt($createdAt);
                     $user->setEmail($email);
                     $user->setImage($image);
                     $user->setName($name);
+                    $user->setSurname($surname);
+                    
                     if($password!=NULL){
                     $user->setPassword(hash('sha256', $password));}
-                    $user->setSurname($surname);
+                    
                     $user->setRole($rol);
                     $em = $this->getDoctrine()->getManager();
                     $isset_user = $em->getRepository("BackendBundle:User")->findBy(array("email" => $email));
@@ -97,7 +98,7 @@ class UserController extends Controller {
                         $em->flush();
                         $data["status"] = 'success';
                         $data["code"] = 200;
-                        $data["msg"] = 'New user created!!!';
+                        $data["msg"] = 'User updated!!!';
                     } else {
                         $data = array("status" => "error", "code" => 400, "msg" => "User no created, duplicated!!");
                     }
